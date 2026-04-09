@@ -69,7 +69,7 @@ const Card = ({ children, style = {}, className = "" }) => {
 
 // --- URL state persistence ---
 
-const URL_KEYS = ["baseSalary", "bonusPct", "billing", "sideRate", "overhead", "threshold", "autoThreshold"];
+const URL_KEYS = ["baseSalary", "bonusPct", "billing", "sideRate", "overhead", "threshold", "thresholdMode"];
 
 const readUrlState = () => {
   const params = new URLSearchParams(window.location.search);
@@ -77,7 +77,7 @@ const readUrlState = () => {
   URL_KEYS.forEach((key) => {
     const val = params.get(key);
     if (val !== null) {
-      state[key] = key === "autoThreshold" ? val === "1" : Number(val);
+      state[key] = key === "thresholdMode" ? val : Number(val);
     }
   });
   return state;
@@ -86,13 +86,13 @@ const readUrlState = () => {
 const writeUrlState = (state) => {
   const params = new URLSearchParams();
   const isDefault = (key, val) => {
-    if (key === "autoThreshold") return val === true;
+    if (key === "thresholdMode") return val === "multiplier";
     if (key === "threshold") return false;
     return DEFAULTS[key] === val;
   };
   Object.entries(state).forEach(([key, val]) => {
     if (!isDefault(key, val)) {
-      params.set(key, key === "autoThreshold" ? (val ? "1" : "0") : String(val));
+      params.set(key, String(val));
     }
   });
   const qs = params.toString();
@@ -580,7 +580,7 @@ export default function BonusSimulator() {
 
   const [baseSalary, setBaseSalary] = useState(urlState.baseSalary ?? DEFAULTS.baseSalary);
   const [thresholdManual, setThresholdManual] = useState(urlState.threshold ?? DEFAULTS.threshold);
-  const [autoThreshold, setAutoThreshold] = useState(urlState.autoThreshold ?? true);
+  const [thresholdMode, setThresholdMode] = useState(urlState.thresholdMode ?? "multiplier"); // "multiplier" | "cost" | "manual"
   const [bonusPct, setBonusPct] = useState(urlState.bonusPct ?? DEFAULTS.bonusPct);
   const [billing, setBilling] = useState(urlState.billing ?? DEFAULTS.billing);
   const [sideRate, setSideRate] = useState(urlState.sideRate ?? DEFAULTS.sideRate);
@@ -588,15 +588,16 @@ export default function BonusSimulator() {
 
   const holidayReserve = baseSalary * (1 + sideRate / 100) / 12;
 
-  const autoThresholdValue = Math.round((baseSalary * (1 + sideRate / 100) + holidayReserve + overhead) / 100) * 100;
-  const threshold = autoThreshold ? autoThresholdValue : thresholdManual;
+  const multiplierThreshold = Math.round(baseSalary * 1.6 / 100) * 100;
+  const costThreshold = Math.round((baseSalary * (1 + sideRate / 100) + holidayReserve + overhead) / 100) * 100;
+  const threshold = thresholdMode === "multiplier" ? multiplierThreshold : thresholdMode === "cost" ? costThreshold : thresholdManual;
 
   useEffect(() => {
     writeUrlState({ baseSalary, bonusPct, billing, sideRate, overhead,
-      ...(autoThreshold ? {} : { threshold: thresholdManual }),
-      autoThreshold,
+      ...(thresholdMode === "manual" ? { threshold: thresholdManual } : {}),
+      thresholdMode,
     });
-  }, [baseSalary, bonusPct, billing, sideRate, overhead, autoThreshold, thresholdManual]);
+  }, [baseSalary, bonusPct, billing, sideRate, overhead, thresholdMode, thresholdManual]);
 
   const calc = useMemo(() => {
     const bonus = billing > threshold ? ((billing - threshold) * bonusPct) / 100 : 0;
@@ -682,24 +683,32 @@ export default function BonusSimulator() {
               <div style={{ background: `linear-gradient(135deg, ${B.cream}, ${B.beige})`, borderRadius: 10, padding: "14px 16px", marginBottom: 22, border: `1px solid ${B.turq}60` }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontSize: 11, fontWeight: 600, color: B.dark, textTransform: "uppercase", letterSpacing: "0.04em", fontFamily: fonts.body }}>Threshold</span>
-                  <button onClick={() => { setAutoThreshold(!autoThreshold); if (!autoThreshold) setThresholdManual(autoThresholdValue); }}
-                    style={{ fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 20, cursor: "pointer", border: "none",
-                      background: autoThreshold ? B.sea : B.warm, color: autoThreshold ? "#fff" : "#777",
-                      fontFamily: fonts.body, transition: "all 0.2s ease" }}>
-                    {autoThreshold ? "AUTO" : "MANUAL"}
-                  </button>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {[{ key: "multiplier", label: "1.6\u00D7" }, { key: "cost", label: "COST" }, { key: "manual", label: "MANUAL" }].map((m) => (
+                      <button key={m.key} onClick={() => { setThresholdMode(m.key); if (m.key === "manual") setThresholdManual(threshold); }}
+                        style={{ fontSize: 9, fontWeight: 700, padding: "3px 10px", borderRadius: 16, cursor: "pointer", border: "none",
+                          background: thresholdMode === m.key ? B.sea : B.warm, color: thresholdMode === m.key ? "#fff" : "#777",
+                          fontFamily: fonts.body, transition: "all 0.2s ease" }}>
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                {autoThreshold ? (
+                {thresholdMode === "manual" ? (
+                  <Slider label="" value={thresholdManual} onChange={setThresholdManual} min={5000} max={16000} step={500} color={B.acc} />
+                ) : (
                   <div>
                     <div style={{ fontSize: 22, fontWeight: 700, color: B.sea, fontFamily: fonts.mono }}>{fmt(threshold) + " \u20AC"}</div>
                     <div style={{ fontSize: 10, color: "#a09888", marginTop: 4, lineHeight: 1.6, fontFamily: fonts.body }}>
-                      {`= base salary (${fmt(baseSalary)}) \u00D7 (1 + side costs ${sideRate}%) + holiday reserve (${fmt(Math.round(holidayReserve))}) + overhead (${fmt(overhead)})`}
+                      {thresholdMode === "multiplier"
+                        ? `= base salary (${fmt(baseSalary)}) \u00D7 1.6`
+                        : `= base salary (${fmt(baseSalary)}) \u00D7 (1 + side costs ${sideRate}%) + holiday reserve (${fmt(Math.round(holidayReserve))}) + overhead (${fmt(overhead)})`}
                       <br />
-                      {"= breakeven billing to cover base salary costs"}
+                      {thresholdMode === "multiplier"
+                        ? "= fixed multiplier, same relative threshold for all salary levels"
+                        : "= breakeven billing to cover base salary costs"}
                     </div>
                   </div>
-                ) : (
-                  <Slider label="" value={thresholdManual} onChange={setThresholdManual} min={5000} max={16000} step={500} color={B.acc} />
                 )}
               </div>
 
