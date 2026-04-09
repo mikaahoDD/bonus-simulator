@@ -706,7 +706,7 @@ export default function BonusSimulator() {
                       <br />
                       {thresholdMode === "multiplier"
                         ? "= fixed multiplier, same relative threshold for all salary levels"
-                        : "= breakeven billing to cover base salary costs"}
+                        : `= breakeven billing to cover base salary costs (${(threshold / baseSalary).toFixed(1)}\u00D7 base salary)`}
                     </div>
                   </div>
                 )}
