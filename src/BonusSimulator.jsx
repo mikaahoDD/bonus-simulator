@@ -735,7 +735,7 @@ export default function BonusSimulator() {
               background: `linear-gradient(145deg, ${B.dark}, #243e3b)`,
               borderRadius: 14, padding: "22px 20px", marginBottom: 20, color: "#fff",
               boxShadow: "0 4px 20px rgba(26,46,44,0.2)" }}>
-              <div style={{ ...sectionHeader, color: B.turq, marginBottom: 12 }}>Monthly Billing</div>
+              <div style={{ ...sectionHeader, color: B.turq, marginBottom: 12 }}>Monthly Billing & Allocation</div>
               <Slider label="" value={billing} onChange={setBilling} min={0} max={25000} step={500} color={B.lemon} />
               <div style={{ marginTop: 4 }}>
                 <BillingRateChart billing={billing} onBillingChange={setBilling} threshold={threshold} />
