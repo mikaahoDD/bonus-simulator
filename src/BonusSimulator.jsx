@@ -537,17 +537,17 @@ const AnnualCumulativeChart = ({ yearly }) => {
       ))}
       <path d={billingLine} stroke={B.sea} strokeWidth={2.5} fill="none" strokeLinejoin="round" />
       <path d={costLine} stroke="#b44" strokeWidth={2} fill="none" strokeLinejoin="round" strokeDasharray="6 3" />
-      <path d={marginLine} stroke={B.acc} strokeWidth={2} fill="none" strokeLinejoin="round" />
+      <path d={marginLine} stroke={B.lemonDark} strokeWidth={2} fill="none" strokeLinejoin="round" />
       <circle cx={xp(11)} cy={yp(cumData[11].billing)} r={3.5} fill={B.sea} />
       <circle cx={xp(11)} cy={yp(cumData[11].cost)} r={3.5} fill="#b44" />
-      <circle cx={xp(11)} cy={yp(cumData[11].margin)} r={3.5} fill={B.acc} />
+      <circle cx={xp(11)} cy={yp(cumData[11].margin)} r={3.5} fill={B.lemonDark} />
       <circle cx={xp(6)} cy={yp(cumData[6].billing)} r={3} fill="none" stroke="#b44" strokeWidth={1.5} />
       {/* Legend */}
       <line x1={PL + 5} x2={PL + 20} y1={PT + 2} y2={PT + 2} stroke={B.sea} strokeWidth={2} />
       <text x={PL + 24} y={PT + 5} fontSize={9} fill={B.dark} fontFamily={fonts.body}>Billing</text>
       <line x1={PL + 70} x2={PL + 85} y1={PT + 2} y2={PT + 2} stroke="#b44" strokeWidth={2} strokeDasharray="4 2" />
       <text x={PL + 89} y={PT + 5} fontSize={9} fill={B.dark} fontFamily={fonts.body}>Costs</text>
-      <line x1={PL + 125} x2={PL + 140} y1={PT + 2} y2={PT + 2} stroke={B.acc} strokeWidth={2} />
+      <line x1={PL + 125} x2={PL + 140} y1={PT + 2} y2={PT + 2} stroke={B.lemonDark} strokeWidth={2} />
       <text x={PL + 144} y={PT + 5} fontSize={9} fill={B.dark} fontFamily={fonts.body}>Margin</text>
     </svg>
   );
