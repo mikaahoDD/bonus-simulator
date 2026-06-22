@@ -767,6 +767,7 @@ export default function BonusSimulator() {
               <Row label="Holiday Pay Reserve" value={calc.holidayReserve} sub />
               <Row label="Overhead" value={overhead} sub />
               <Row label="Total Employer Cost" value={calc.totalCost} />
+              <Row label={`Internal Cost (${DEFAULTS.monthlyHours} h/mo)`} value={`${fmt(Math.round(calc.totalCost / DEFAULTS.monthlyHours))} €/h`} sub />
               <div style={{ height: 6 }} />
               <Row hl label="Company Margin" value={`${fmt(calc.margin)} \u20AC (${calc.marginPct.toFixed(0)} %)`} />
               {calc.margin < 0 && (
