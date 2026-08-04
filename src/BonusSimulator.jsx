@@ -678,7 +678,7 @@ export default function BonusSimulator() {
           <div style={{ width: 390, flexShrink: 0 }}>
             <Card className="fade-up fade-up-1 print-hide">
               <div style={{ ...sectionHeader, marginBottom: 16 }}>Model Parameters</div>
-              <Slider label="Base Salary" value={baseSalary} onChange={setBaseSalary} min={3000} max={7000} step={100} />
+              <Slider label="Base Salary" value={baseSalary} onChange={setBaseSalary} min={0} max={7000} step={100} />
 
               <div style={{ background: `linear-gradient(135deg, ${B.cream}, ${B.beige})`, borderRadius: 10, padding: "14px 16px", marginBottom: 22, border: `1px solid ${B.turq}60` }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
